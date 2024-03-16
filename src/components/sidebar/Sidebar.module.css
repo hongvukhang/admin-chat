@@ -1,0 +1,61 @@
+.sidebar-container {
+  width: 15%;
+  min-width: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 0px 20px 20px;
+  background-color: #212b36;
+  box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.822);
+  font-family: "Roboto", sans-serif;
+}
+.sidebar-title {
+  display: flex;
+  justify-content: space-between;
+  padding-right: 20px;
+  align-items: center;
+}
+.sidebar-title h2 {
+  margin: 0;
+}
+.sidebar-title img {
+  border-radius: 50%;
+}
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 30%;
+  justify-content: space-between;
+}
+.sidebar-content_item,
+.sidebar-content_item_chat {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.sidebar-content_item svg,
+.sidebar-content_item_chat svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding-right: 5px;
+}
+.sidebar-content_item span,
+.sidebar-content_item_chat span {
+  font-size: 1.05rem;
+}
+.item-chat {
+  height: 1.5rem;
+  position: relative;
+}
+.item-chat span {
+  position: absolute;
+  top: -5px;
+  left: -4px;
+  background-color: red;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 12px;
+}

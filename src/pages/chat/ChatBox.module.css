@@ -1,0 +1,22 @@
+.box-chat {
+  width: calc(100% - 35%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-family: Roboto, sans-serif;
+  background-color: #29242a;
+  color: #ffffffcf;
+}
+.box-chat > img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.box-chat h3 {
+  margin: 0.5rem 0;
+}
+.box-chat p {
+  margin: 0;
+}
