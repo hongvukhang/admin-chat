@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useCookies } from "react-cookie";
+import { useDispatch } from "react-redux";
 
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -16,11 +18,13 @@ import { LayoutChat } from "../ChatBox";
 import Loading from "./element/Loading";
 import Receiver from "./element/Receiver";
 import classes from "./ChatUser.module.css";
+import { display } from "../../../redux/showAlertSlice";
 
 import { socketContext } from "../../../App";
 export default function ChatUser() {
   const { socket, message } = useContext(socketContext);
-
+  const [cookie] = useCookies(["auth"]);
+  const dispatch = useDispatch();
   const params = useParams();
   const navigate = useNavigate();
   const [receiver, setReceiver] = useState({
@@ -46,16 +50,18 @@ export default function ChatUser() {
     axios
       .get(`/chat/${params.id}`)
       .then((res) => {
-        setReceiver({
-          avatar: res.data.avatar,
-          userName: res.data.userName,
-          _id: res.data.receiver,
-        });
-
+        setReceiver(res.data.receive);
         setMsgs(res.data.messages);
       })
-      .catch(() => {
-        navigate("/login");
+      .catch((error) => {
+        dispatch(
+          display({
+            message: error?.response?.data?.msg ?? "Some thing wrong!",
+            severity: "error",
+            close: { title: "close" },
+          })
+        );
+        navigate("/");
       });
   };
 
@@ -90,6 +96,7 @@ export default function ChatUser() {
         receiver_id: receiver._id,
         msg: msg,
         type: isURLValue ? "url" : "text",
+        token: cookie.auth,
       });
 
     msgRef.current.value = "";
@@ -100,6 +107,7 @@ export default function ChatUser() {
         type: isURLValue ? "url" : "text",
         message: msg,
         createAt: new Date(),
+        sender: true,
       },
     ];
     setMsgs(loadMessages);
@@ -116,6 +124,7 @@ export default function ChatUser() {
           receiver_id: receiver._id,
           originalname: img.name,
           mimetype: img.type,
+          token: cookie.auth,
         },
         (callback) => {
           console.log(callback);
@@ -142,15 +151,46 @@ export default function ChatUser() {
     <LayoutChat reLoadSend={reloading}>
       <main className={classes["container-chatbox"]}>
         <div className={classes["user-detail"]}>
-          <div>
-            <img src={receiver.avatar} />
-            <h3 className={classes["user-name"]}>{receiver.userName}</h3>
-          </div>
+          {receiver.length <= 1 && (
+            <div>
+              <img src={receiver[0].avatar} />
+              <h3 className={classes["user-name"]}>{receiver[0].userName}</h3>
+            </div>
+          )}
+          {receiver.length > 1 && (
+            <div className={classes["name-group_container"]}>
+              <div className={classes["avatar-container"]}>
+                <img
+                  src={
+                    receiver[0].avatar === cookie.avatar
+                      ? receiver[1].avatar
+                      : receiver[0].avatar
+                  }
+                  alt="avatar"
+                />
+                <img
+                  src={
+                    receiver[receiver.length - 1].avatar === cookie.avatar
+                      ? receiver[receiver.length - 2].avatar
+                      : receiver[receiver.length - 1].avatar
+                  }
+                  alt="avatar"
+                />
+              </div>
+              <div className={classes["name-group"]}>
+                <h3 className={classes["user-name"]}>
+                  {receiver.map((user, index) => (
+                    <span key={index}>{user.userName}, </span>
+                  ))}
+                </h3>
+              </div>
+            </div>
+          )}
           <div></div>
         </div>
         <ul className={classes["message-container"]}>
           {msgs.map((msg) => {
-            if (msg.sender === receiver._id) {
+            if (!msg.sender) {
               return <Receiver key={msg._id} msg={msg} />;
             } else {
               return <Sender key={msg._id} msg={msg} />;

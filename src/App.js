@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 import axios from "axios";
@@ -11,10 +11,17 @@ import Users from "./pages/users/Users";
 import Login from "./pages/login/Login";
 import ChatUser from "./pages/chat/chat-user/ChatUser.js";
 import ChatBox from "./pages/chat/ChatBox.js";
+import ForgotPassword from "./pages/forgotPassword/ForgotPassword.js";
 
+import Alerts from "./portal/alert/Alert.js";
+import { useSelector } from "react-redux";
+import Loading from "./portal/loading/Loading.js";
 export const socketContext = React.createContext();
 function App() {
   const [cookies] = useCookies(["auth"]);
+
+  const alert = useSelector((state) => state.show_alert);
+
   axios.defaults.baseURL = "http://localhost:5000/";
   axios.defaults.headers.common["Authorization"] = `Bearer ${cookies.auth}`;
 
@@ -42,13 +49,25 @@ function App() {
   }, [cookies]);
   return (
     <socketContext.Provider value={{ socket: socketIO, message: message }}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/chat" element={<ChatBox />} />
-        <Route path="/chat/:id" element={<ChatUser />} />
-      </Routes>
+      <BrowserRouter>
+        {alert.status && (
+          <Alerts
+            severity={alert.severity}
+            msg={alert.message}
+            actionHandler={alert.actions}
+            close={alert.close}
+          />
+        )}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/chat" element={<ChatBox />} />
+          <Route path="/chat/:id" element={<ChatUser />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+        {/* <Loading /> */}
+      </BrowserRouter>
     </socketContext.Provider>
   );
 }

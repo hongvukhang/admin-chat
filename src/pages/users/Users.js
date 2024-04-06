@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { FaPlus } from "react-icons/fa6";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import axios from "axios";
 
@@ -7,20 +6,21 @@ import classes from "./Users.module.css";
 
 import Layout from "../../components/layout/Layout";
 import Alerts from "../../portal/alert/Alert";
+import Search from "./search/Search";
+import { useNavigate } from "react-router-dom";
+
+import { useDispatch } from "react-redux";
+import { display } from "../../redux/showAlertSlice";
 
 export default function Users() {
-  const alertDefault = {
-    status: false,
-    severity: "",
-    msg: "",
-    actionHandler: () => {},
-  };
-  const [alert, setAlert] = useState(alertDefault);
+  const navigate = useNavigate();
+  const [filter, setFilter] = useState("all");
   const [dataTable, setDataTable] = useState({ totalPage: 2, dataUser: [] });
+  const [dataFilter, setDatafilter] = useState(dataTable);
+  const [search, setSearch] = useState("");
   const [pageNum, setPageNum] = useState(1);
-  function closeAlert() {
-    setAlert(alertDefault);
-  }
+
+  const dispatch = useDispatch();
 
   // next table and back table
   const nextPage = () => {
@@ -38,14 +38,73 @@ export default function Users() {
       .get(`/admin/get-user/user?page=${pageNum}`)
       .then((res) => {
         setDataTable(res.data);
+        setDatafilter(res.data);
       })
       .catch((err) => {
         console.log(err);
       });
   }, [pageNum]);
+
+  const filterData = (dataUser) => {
+    const data = dataUser.filter((user) =>
+      user.userName.toLowerCase().includes(search.toLowerCase())
+    );
+    return data;
+  };
+
+  useEffect(() => {
+    if (filter == "all") {
+      if (search !== "") {
+        const data = filterData(dataTable.dataUser);
+        setDatafilter({ ...dataTable, dataUser: data });
+        return;
+      }
+      setDatafilter(dataTable);
+      return;
+    }
+    if (filter === "user" || filter === "admin") {
+      const dataFilter = dataTable.dataUser.filter(
+        (user) => user.role === filter
+      );
+      if (search !== "") {
+        const data = filterData(dataFilter);
+        const totalPage = Math.ceil(data.length / 6);
+        setDatafilter({ totalPage: totalPage, dataUser: data });
+        return;
+      }
+      const totalPage = Math.ceil(dataFilter.length / 6);
+      setDatafilter({ totalPage: totalPage, dataUser: dataFilter });
+      return;
+    }
+    if (filter === "baned") {
+      const dataFilter = dataTable.dataUser.filter((user) => user.baned);
+      if (search !== "") {
+        const data = filterData(dataFilter);
+        const totalPage = Math.ceil(data.length / 6);
+        setDatafilter({ totalPage: totalPage, dataUser: data });
+        return;
+      }
+      const totalPage = Math.ceil(dataFilter.length / 6);
+      setDatafilter({ totalPage: totalPage, dataUser: dataFilter });
+      return;
+    }
+  }, [filter, search]);
+
+  // show alert handler
+
+  const alertHandler = (severity, message, action) => {
+    dispatch(
+      display({
+        severity: severity,
+        message: message,
+        action: action,
+        close: { title: "close" },
+      })
+    );
+  };
+
   //set admin and set user handler
   const setAdminAction = (_id) => {
-    setAlert(alertDefault);
     axios
       .post("/admin/set-admin", { _id: _id })
       .then((res) => {
@@ -56,33 +115,17 @@ export default function Users() {
         dataTable.dataUser[indexUser].role =
           dataTable.dataUser[indexUser].role === "admin" ? "user" : "admin";
         setDataTable({ ...dataTable, dataUser: dataTable.dataUser });
-        setAlert({
-          status: true,
-          severity: "success",
-          msg: res.data.msg,
-          actionHandler: () => {},
-        });
+        alertHandler("success", res.data.msg);
       })
       .catch((err) => {
-        setAlert({
-          status: true,
-          severity: "error",
-          msg: err?.response?.data?.msg,
-          actionHandler: () => {},
-        });
+        alertHandler("error", err?.response?.data?.msg);
       });
   };
   const setAdmin = (msg, _id) => {
-    setAlert({
-      status: true,
-      severity: "info",
-      msg: msg,
-      actionHandler: () => setAdminAction(_id),
-    });
+    alertHandler("info", msg, () => setAdminAction(_id));
   };
   // ban and unban user handler
   const setBanAction = (_id) => {
-    setAlert(alertDefault);
     axios
       .post("/admin/ban-user", { _id: _id })
       .then((res) => {
@@ -94,80 +137,94 @@ export default function Users() {
           !dataTable.dataUser[indexUser].baned;
 
         setDataTable({ ...dataTable, dataUser: dataTable.dataUser });
-        setAlert({
-          status: true,
-          severity: "success",
-          msg: res.data.msg,
-          actionHandler: () => {},
-        });
+        dispatch(
+          display({
+            severity: "success",
+            message: res.data.msg,
+            close: { title: "close" },
+          })
+        );
       })
       .catch((err) => {
-        setAlert({
-          status: true,
-          severity: "error",
-          msg: "Something is wrong!",
-          actionHandler: () => {},
-        });
+        alertHandler("error", err?.response?.data?.msg);
       });
   };
   const setBan = (msg, _id) => {
-    setAlert({
-      status: true,
-      severity: "info",
-      msg: msg,
-      actionHandler: () => setBanAction(_id),
-    });
+    dispatch(
+      display({
+        severity: "info",
+        message: msg,
+        action: () => setBanAction(_id),
+        close: { title: "close" },
+      })
+    );
   };
   // delete user
   const deleteUserAction = (_id) => {
-    setAlert(alertDefault);
     axios
       .delete(`/admin/delete-user/${_id}`)
       .then((res) => {
         const dataUser = dataTable.dataUser.filter((user) => user._id !== _id);
-
+        const dataUserFilter = dataFilter.dataUser.filter(
+          (user) => user._id !== _id
+        );
         setDataTable({ ...dataTable, dataUser: dataUser });
-        setAlert({
-          status: true,
-          severity: "success",
-          msg: res.data.msg,
-          actionHandler: () => {},
-        });
+        setDatafilter({ ...dataFilter, dataUser: dataUserFilter });
+        dispatch(
+          display({
+            severity: "success",
+            message: res.data.msg,
+            close: { title: "close" },
+          })
+        );
       })
       .catch((err) => {
-        setAlert({
-          status: true,
-          severity: "error",
-          msg: "Something is wrong!",
-          actionHandler: () => {},
-        });
+        alertHandler("error", err?.response?.data?.msg);
       });
   };
   const deleteUser = (msg, _id) => {
-    setAlert({
-      status: true,
-      severity: "info",
-      msg: msg,
-      actionHandler: () => deleteUserAction(_id),
-    });
+    dispatch(
+      display({
+        severity: "info",
+        message: msg,
+        action: () => deleteUserAction(_id),
+        close: { title: "close" },
+      })
+    );
   };
+
+  //
+  const searchHandler = (userName) => {
+    setSearch(userName);
+  };
+
+  const sendMessage = (Id) => {
+    axios
+      .get(`/chat/send-message/${Id}`)
+      .then((res) => {
+        navigate(`/chat/${res.data}`);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   return (
     <Layout>
       <div className={classes["user-container"]}>
-        {alert.status && (
-          <Alerts
-            severity={alert.severity}
-            close={closeAlert}
-            msg={alert.msg}
-            actionHandler={alert.actionHandler}
-          />
-        )}
         <div className={classes["table-container"]}>
           <div className={classes["table-title"]}>
             <h3>List user</h3>
-            <button>
-              <FaPlus /> Create new user
-            </button>
+            <Search search={searchHandler} />
+            <select
+              className={classes["select-filter"]}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="admin">Admin</option>
+              <option value="user">User</option>
+              <option value="baned">Baned</option>
+            </select>
           </div>
           <table>
             <thead className={classes["table-header"]}>
@@ -181,17 +238,17 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {dataTable.dataUser.map((user) => {
+              {dataFilter.dataUser.map((user) => {
                 return (
                   <tr key={user._id} className={classes["table-body_item"]}>
-                    <td>65e8b7f2dddab1fab3e1275d</td>
+                    <td onClick={() => sendMessage(user._id)}>{user._id}</td>
                     <td>
                       <div className={classes["item-img"]}>
                         <img width="50px" src={user.avatar} />
                         <span>{user.userName}</span>
                       </div>
                     </td>
-                    <td>{user.totalTime}</td>
+                    <td>{user.totalTime.toFixed(2)}</td>
                     <td>
                       <button
                         className={`${classes.btn} ${
@@ -252,7 +309,7 @@ export default function Users() {
             <IoIosArrowBack />
           </button>
           <p>
-            {pageNum}/{dataTable.totalPage}
+            {pageNum}/{dataFilter.totalPage}
           </p>
           <button onClick={nextPage}>
             <IoIosArrowForward />

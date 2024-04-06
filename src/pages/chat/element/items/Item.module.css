@@ -60,3 +60,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.avatar-group {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+.avatar-group img {
+  width: 45px;
+  height: 45px;
+  position: absolute;
+  border: 2px solid white;
+  box-sizing: border-box;
+}
+.avatar-group img:first-child {
+  top: 0;
+  right: 0;
+}
+.avatar-group img:last-child {
+  bottom: 0;
+  left: 0;
+}

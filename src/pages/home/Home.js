@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import classes from "./Home.module.css";
-import Layout from "../../components/layout/Layout";
-
 import { FaUsers } from "react-icons/fa6";
 import { CiTimer, CiUser } from "react-icons/ci";
 
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+
+import classes from "./Home.module.css";
+import Layout from "../../components/layout/Layout";
 
 import { useCookies } from "react-cookie";
 export default function Home({ socket }) {

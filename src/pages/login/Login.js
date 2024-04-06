@@ -1,31 +1,41 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import classes from "./Login.module.css";
-import Alerts from "../../portal/alert/Alert";
+
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { display } from "../../redux/showAlertSlice";
+
 export default function Login() {
   const [cookies, setCookies] = useCookies(["auth"]);
 
   const navigate = useNavigate();
-
-  const [error, setError] = useState({ status: false, msg: "" });
+  const dispatch = useDispatch();
   const userNameRef = useRef();
   const passwordRef = useRef();
-  const setNotificaltion = (message) => {
-    setError({ status: true, msg: message });
+  const notify = (msg) => {
+    dispatch(
+      display({
+        severity: "error",
+        message: msg,
+        close: { title: "close" },
+      })
+    );
   };
+
   const validate = (userName, password) => {
     if (!userName) {
-      setNotificaltion("UserName is empty");
+      notify("UserName is empty");
+
       return false;
     }
     if (!password) {
-      setNotificaltion("Password is empty");
+      notify("Password is empty");
       return false;
     }
     if (password.length < 8) {
-      setNotificaltion("Password is wrong!");
+      notify("Password is wrong!");
       return false;
     }
     return true;
@@ -47,19 +57,12 @@ export default function Login() {
           navigate("/");
         })
         .catch((err) => {
-          setNotificaltion(err.response.data.msg);
+          notify(err.response.data.msg);
         });
     }
   };
   return (
     <div className={classes["login-container"]}>
-      {error.status && (
-        <Alerts
-          severity="error"
-          msg={error.msg}
-          close={() => setError({ ...error, status: false })}
-        />
-      )}
       <form onSubmit={loginHandler} className={classes["login-main"]}>
         <h2>Login Admin</h2>
         <p>User Name:</p>
@@ -71,6 +74,12 @@ export default function Login() {
           placeholder="Enter User Name"
         />
         <button className={classes["btn"]}>SIGN IN</button>
+        <span
+          onClick={() => navigate("/forgot-password")}
+          className={classes["fotgot"]}
+        >
+          Forgot Password
+        </span>
       </form>
     </div>
   );

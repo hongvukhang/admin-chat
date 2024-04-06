@@ -1,0 +1,76 @@
+@keyframes open {
+  from {
+    width: 30px;
+  }
+  to {
+    width: 270px;
+  }
+}
+@keyframes inputAnimation {
+  from {
+    width: 0px;
+  }
+  to {
+    width: 200px;
+  }
+}
+@keyframes close {
+  from {
+    width: 270px;
+  }
+  to {
+    width: 30px;
+  }
+}
+@keyframes closeHandler {
+  from {
+    width: 30px;
+  }
+  to {
+    width: 0px;
+  }
+}
+.container-open,
+.container-close {
+  height: 32px;
+
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  padding: 0px 5px;
+  box-sizing: border-box;
+  box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px,
+    rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+}
+.container-open {
+  width: 270px;
+  animation-name: open;
+  animation-duration: 1s;
+  justify-content: space-around;
+}
+.container-close {
+  width: 32px;
+  animation-name: close;
+  animation-duration: 1s;
+  justify-content: space-between;
+}
+.container-close > svg:first-child {
+  width: 0px;
+  animation-name: closeHandler;
+  animation-duration: 1s;
+}
+
+svg {
+  height: 85%;
+  width: auto;
+  cursor: pointer;
+}
+.container-open input {
+  flex: 1;
+  height: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  animation-name: inputAnimation;
+  animation-duration: 1s;
+}

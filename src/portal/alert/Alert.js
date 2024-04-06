@@ -4,24 +4,44 @@ import classes from "./Alert.module.css";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { notDisplay } from "../../redux/showAlertSlice";
+
 export default function Alerts({ severity, msg, close, actionHandler }) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const closeHandler = () => {
+    dispatch(notDisplay());
+    close.title !== "close" && navigate(close.payload);
+  };
+
   const statuss = {
     success: (
-      <Button color="inherit" size="small" onClick={close}>
+      <Button color="inherit" size="small" onClick={closeHandler}>
         CLOSE
       </Button>
     ),
     error: (
-      <Button color="inherit" size="small" onClick={close}>
+      <Button color="inherit" size="small" onClick={closeHandler}>
         CLOSE
       </Button>
     ),
     info: (
       <>
-        <Button color="inherit" size="small" onClick={close}>
+        <Button color="inherit" size="small" onClick={closeHandler}>
           CANCEL
         </Button>
-        <Button color="inherit" size="small" onClick={actionHandler}>
+        <Button
+          color="inherit"
+          size="small"
+          onClick={() => {
+            closeHandler();
+            actionHandler();
+          }}
+        >
           OK
         </Button>
       </>

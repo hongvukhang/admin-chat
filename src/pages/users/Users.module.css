@@ -59,6 +59,12 @@
 
 .table-body_item > td:nth-child(1) {
   width: 220px;
+  cursor: pointer;
+}
+
+.table-body_item > td:nth-child(1):hover {
+  color: #007fff;
+  text-decoration: underline;
 }
 .item-img {
   display: flex;
@@ -115,4 +121,14 @@ button {
 }
 .next-page p {
   margin: 0 20px;
+}
+.select-filter {
+  width: 80px;
+  box-sizing: border-box;
+  height: 28px;
+  font-family: "Roboto", sans-serif;
+  border-radius: 7px;
+}
+.select-filter:focus-visible {
+  outline: none;
 }

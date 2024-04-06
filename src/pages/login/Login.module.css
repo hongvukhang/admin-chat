@@ -41,3 +41,13 @@
   margin-top: 20px;
   color: white;
 }
+.fotgot {
+  text-align: center;
+  margin-top: 10px;
+  font-style: italic;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.fotgot:hover {
+  color: #007498;
+}
